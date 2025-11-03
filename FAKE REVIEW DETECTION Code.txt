@@ -1,0 +1,43 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, classification_report
+
+# Create a dummy patient_feedback.csv for demonstration
+data = {
+    'Feedback': [
+        'Great service!',
+        'Very helpful staff.',
+        'Could be better.',
+        'Poor experience.',
+        'Satisfied with the outcome.'
+    ],
+    'Sentiment': ['Positive', 'Positive', 'Neutral', 'Negative', 'Positive']
+}
+df_dummy = pd.DataFrame(data)
+df_dummy.to_csv('patient_feedback.csv', index=False)
+print("Dummy 'patient_feedback.csv' created.")
+
+# Load dataset
+df = pd.read_csv('patient_feedback.csv')
+df['Feedback'] = df['Feedback'].astype(str)
+
+# Split into train and test data
+X_train, X_test, y_train, y_test = train_test_split(
+    df['Feedback'], df['Sentiment'], test_size=0.2, random_state=42
+)
+
+# TF-IDF vectorization
+tfidf = TfidfVectorizer(stop_words='english')
+X_train_tfidf = tfidf.fit_transform(X_train)
+X_test_tfidf = tfidf.transform(X_test)
+
+# Train Naive Bayes model
+model = MultinomialNB()
+model.fit(X_train_tfidf, y_train)
+
+# Predict and evaluate
+y_pred = model.predict(X_test_tfidf)
+print('Accuracy:', accuracy_score(y_test, y_pred))
+print('\nClassification Report:\n', classification_report(y_test, y_pred))
